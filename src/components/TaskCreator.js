@@ -23,11 +23,15 @@ function TaskCreator() {
 	function handleChange(e) {
 		const { name, value } = e.target;
 		if (name === 'taskName') setTaskName(value);
-		else if (name === 'taskDescription') setTaskDescription(value);
+		else if (name === 'taskDescription') {
+			setTaskDescription(value);
+		}
 	}
 
 	function fetchTasks() {
-		fetch(`http://localhost:3001/api/tasks?_=${new Date().getTime()}`)
+		fetch(
+			`https://tcauo43b4haxkvrh4y4l2tukue0pbske.lambda-url.us-east-2.on.aws/api/tasks?_=${new Date().getTime()}`
+		)
 			.then((response) => response.json())
 			.then((data) => {
 				setTasks(data);
@@ -37,37 +41,34 @@ function TaskCreator() {
 			});
 	}
 	// CREATE A NEW TASK AND UPDATE TASKS DISPLAYED
-	// CREATE A NEW TASK AND UPDATE TASKS DISPLAYED
-	const handleCreateTask = () => {
-		// Check if a task type is selected
-		if (selectedButtonValue === null) {
-			console.error('Task type must be selected');
-			return;
-		}
+	const handleCreateTask = (e) => {
+		console.log('create pressed');
+		e.preventDefault();
 
 		// Prepare the task data
 		const taskData = {
 			taskName,
 			taskDescription,
-			taskType: buttons[selectedButtonValue].value, // Use the correct field name
+			taskType: buttons[selectedButtonValue].value,
 		};
 
-		// Clear the input fields immediately
-		setTaskName('');
-		setTaskDescription('');
-
 		// Send the taskData to the server using a POST request
-		fetch('http://localhost:3001/api/createTask', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify(taskData),
-		})
+		fetch(
+			'https://tcauo43b4haxkvrh4y4l2tukue0pbske.lambda-url.us-east-2.on.aws/api/createTask',
+			{
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(taskData),
+			}
+		)
 			.then((response) => response.json())
 			.then((result) => {
 				// Handle the response from the server (if needed)
 				console.log('Task created:', result);
+				setTaskName('');
+				setTaskDescription('');
 
 				// Fetch the updated list of tasks after creating a new task
 				fetchTasks();
@@ -79,16 +80,20 @@ function TaskCreator() {
 
 	function handleDeleteTask(taskUniqueIdentifier) {
 		// Send a DELETE request to the server with the unique identifier
-		fetch(`http://localhost:3001/api/deleteTask/${taskUniqueIdentifier}`, {
-			method: 'DELETE',
-		})
+		fetch(
+			`https://tcauo43b4haxkvrh4y4l2tukue0pbske.lambda-url.us-east-2.on.aws/api/deleteTask/${taskUniqueIdentifier}`,
+			{
+				method: 'DELETE',
+			}
+		)
 			.then((response) => response.json())
 			.then((result) => {
 				// Handle the response from the server (if needed)
 				console.log('Task deleted:', result);
-
 				// Fetch the updated list of tasks after deleting a task
+				console.log('deleted');
 				fetchTasks();
+				console.log('deleted again');
 			})
 			.catch((error) => {
 				console.error('Error deleting task:', error);
@@ -108,6 +113,7 @@ function TaskCreator() {
 						name="taskName"
 						placeholder="Task Name"
 						onChange={handleChange}
+						value={taskName}
 					/>
 				</FloatingLabel>
 				<FloatingLabel controlId="floatingPassword" label="Task Description">
@@ -117,6 +123,7 @@ function TaskCreator() {
 						name="taskDescription"
 						placeholder="Task Description"
 						onChange={handleChange}
+						value={taskDescription}
 					/>
 				</FloatingLabel>
 				<ButtonGroup size="lg" className="mb-3 w-100">
@@ -133,7 +140,7 @@ function TaskCreator() {
 				</ButtonGroup>
 				<div className="mb-3">
 					<Button
-						className=""
+						className="mx-2"
 						variant="primary"
 						type="submit"
 						onClick={(e) => handleCreateTask(e)}>
